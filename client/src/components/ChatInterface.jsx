@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Bot, Copy, Check, Loader2, ArrowUp, Plus, Mic, AudioWaveform, X } from 'lucide-react';
 
-const ChatInterface = ({ onSubmit, loading, output, currentQuery, placeholder, hasContent }) => {
+const ChatInterface = ({ onSubmit, loading, messages = [], placeholder }) => {
   const [input, setInput] = useState('');
   const [copied, setCopied] = useState(false);
   const [attachedFile, setAttachedFile] = useState(null);
@@ -19,12 +19,12 @@ const ChatInterface = ({ onSubmit, loading, output, currentQuery, placeholder, h
   };
 
   useEffect(() => {
-    if (output && textareaRef.current) {
+    if (messages.length > 0 && textareaRef.current) {
       setInput('');
       setAttachedFile(null);
       textareaRef.current.style.height = '24px';
     }
-  }, [output]);
+  }, [messages.length]);
 
   const handleSubmit = () => {
     const finalInput = attachedFile
@@ -45,9 +45,8 @@ const ChatInterface = ({ onSubmit, loading, output, currentQuery, placeholder, h
     e.target.value = '';
   };
 
-  const handleCopy = () => {
-    if (!output) return;
-    navigator.clipboard.writeText(output);
+  const handleCopy = (text) => {
+    navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -57,27 +56,31 @@ const ChatInterface = ({ onSubmit, loading, output, currentQuery, placeholder, h
   return (
     <>
       {/* Chat messages */}
-      {(output || loading) && (
+      {messages.length > 0 && (
         <div className="messages-area">
-          {currentQuery && (
-            <div className="user-query-display">{currentQuery}</div>
-          )}
-          <div className="bot-response-display">
-            <div className="bot-response-header">
-              <Bot size={15} /> DevGenie AI
+          {messages.map((msg, idx) => (
+            <div key={idx} className={msg.role === 'user' ? 'user-msg-wrapper' : 'bot-msg-wrapper'}>
+              {msg.role === 'user' ? (
+                <div className="user-query-display">{msg.content}</div>
+              ) : (
+                <div className="bot-response-display">
+                  <div className="bot-response-header">
+                    <Bot size={15} /> DevGenie AI
+                  </div>
+                  <div className="output-content">
+                     <ReactMarkdown>{msg.content}</ReactMarkdown>
+                  </div>
+                  {idx === messages.length - 1 && loading ? (
+                     <Loader2 size={18} className="loader" style={{ marginTop: '0.5rem' }} />
+                  ) : (
+                    <button className="copy-btn" onClick={() => handleCopy(msg.content)}>
+                      {copied ? <><Check size={13} color="#4ade80" /> Copied</> : <><Copy size={13} /> Copy</>}
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
-            <div className="output-content">
-              {loading
-                ? <Loader2 size={18} className="loader" />
-                : <ReactMarkdown>{output}</ReactMarkdown>
-              }
-            </div>
-            {!loading && output && (
-              <button className="copy-btn" onClick={handleCopy}>
-                {copied ? <><Check size={13} color="#4ade80" /> Copied</> : <><Copy size={13} /> Copy</>}
-              </button>
-            )}
-          </div>
+          ))}
         </div>
       )}
 

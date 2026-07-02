@@ -9,18 +9,36 @@ const API_URL = 'http://localhost:5000/api';
 function App() {
   const [selectedAgent, setSelectedAgent] = useState('code');
   const [loading, setLoading] = useState(false);
-  const [output, setOutput] = useState('');
-  const [currentQuery, setCurrentQuery] = useState('');
+  const [messages, setMessages] = useState([]);
   const [history, setHistory] = useState([]);
+  const [greetingIndex, setGreetingIndex] = useState(0);
+  const [currentSessionId, setCurrentSessionId] = useState(null);
   const messagesEndRef = useRef(null);
+
+  const GREETINGS = [
+    "What's on your mind today?",
+    "Ready when you are.",
+    "How can I help you build today?",
+    "Let's create something amazing.",
+    "Describe your next big project.",
+    "Need a hand with some code?",
+    "Tell me what you're thinking about."
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setGreetingIndex((prev) => (prev + 1) % GREETINGS.length);
+    }, 300000); // 5 minutes (300,000 ms)
+    return () => clearInterval(interval);
+  }, [GREETINGS.length]);
 
   useEffect(() => { fetchHistory(); }, []);
 
   useEffect(() => {
-    if (output || loading) {
+    if (messages.length > 0 || loading) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [output, loading]);
+  }, [messages, loading]);
 
   const fetchHistory = async () => {
     try {
@@ -33,16 +51,32 @@ function App() {
 
   const handleSubmit = async (input) => {
     setLoading(true);
-    setCurrentQuery(input);
-    setOutput('');
+    // Add user message and a placeholder for bot response
+    const userMsg = { role: 'user', content: input };
+    setMessages(prev => [...prev, userMsg]);
+
+    const sessionId = currentSessionId || Date.now().toString();
+    if (!currentSessionId) setCurrentSessionId(sessionId);
+
     try {
-      const res = await axios.post(`${API_URL}/ask`, { type: selectedAgent, input });
+      const res = await axios.post(`${API_URL}/ask`, { 
+        type: selectedAgent, 
+        input, 
+        sessionId 
+      });
       if (res.data.success) {
-        setOutput(res.data.data.output);
+        const botMsg = { role: 'assistant', content: res.data.data.output };
+        setMessages(prev => [...prev, botMsg]);
+        
+        // Refetch history to get grouped sessions correctly
         fetchHistory();
       }
     } catch (err) {
-      setOutput(err.response?.data?.details || 'An error occurred. Make sure the backend is running.');
+      const errorMsg = { 
+        role: 'assistant', 
+        content: err.response?.data?.details || 'An error occurred. Make sure the backend is running.' 
+      };
+      setMessages(prev => [...prev, errorMsg]);
     } finally {
       setLoading(false);
     }
@@ -50,8 +84,11 @@ function App() {
 
   const handleHistorySelect = (item) => {
     setSelectedAgent(item.type);
-    setCurrentQuery(item.input);
-    setOutput(item.output);
+    setCurrentSessionId(item.sessionId); // Load session
+    setMessages([
+      { role: 'user', content: item.input },
+      { role: 'assistant', content: item.output }
+    ]);
   };
 
   const handleHistoryDelete = async (id) => {
@@ -65,12 +102,12 @@ function App() {
 
   // New chat resets everything
   const handleNewChat = () => {
-    setOutput('');
-    setCurrentQuery('');
+    setMessages([]);
     setSelectedAgent('code');
+    setCurrentSessionId(null); // Reset session to generate new one on first msg
   };
 
-  const hasContent = output || loading;
+  const hasContent = messages.length > 0;
 
   return (
     <div className="app-container">
@@ -86,13 +123,14 @@ function App() {
           {!hasContent ? (
             <div className="empty-state">
               <div className="hero-header">
-                <h1>What's on your mind today?</h1>
+                <h1 key={greetingIndex} className="fade-in-up">
+                  {GREETINGS[greetingIndex]}
+                </h1>
               </div>
               <ChatInterface
                 onSubmit={handleSubmit}
                 loading={loading}
-                output={output}
-                currentQuery={currentQuery}
+                messages={messages}
                 placeholder="Ask anything..."
               />
               <AgentSelector
@@ -105,8 +143,7 @@ function App() {
               <ChatInterface
                 onSubmit={handleSubmit}
                 loading={loading}
-                output={output}
-                currentQuery={currentQuery}
+                messages={messages}
                 placeholder="Ask a follow-up..."
               />
               <div ref={messagesEndRef} style={{ height: '1px' }} />

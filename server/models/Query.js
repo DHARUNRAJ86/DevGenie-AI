@@ -1,6 +1,14 @@
 const mongoose = require('mongoose');
 
 const QuerySchema = new mongoose.Schema({
+  sessionId: {
+    type: String,
+    required: true
+  },
+  title: {
+    type: String,
+    default: 'New Chat'
+  },
   type: {
     type: String,
     required: true,

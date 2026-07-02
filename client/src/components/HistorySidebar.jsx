@@ -52,15 +52,15 @@ const HistorySidebar = ({ history, onHistorySelect, onHistoryDelete, onNewChat, 
       <div className="history-list">
         {history.map((item) => (
           <div
-            key={item._id}
+            key={item.sessionId}
             className="history-item"
             onClick={() => onHistorySelect(item)}
           >
             <div className="history-item-header">
-              <div className="history-item-preview">{item.input}</div>
+              <div className="history-item-preview">{item.title}</div>
               <button
                 className="delete-history-btn"
-                onClick={(e) => { e.stopPropagation(); onHistoryDelete(item._id); }}
+                onClick={(e) => { e.stopPropagation(); onHistoryDelete(item.sessionId); }}
                 title="Delete"
               >
                 <X size={13} />
