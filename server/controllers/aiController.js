@@ -85,8 +85,25 @@ exports.askAgent = async (req, res) => {
     if (!success) throw lastError;
 
     // Check if we already have a title for this session
-    const existing = await Query.findOne({ sessionId });
-    const title = existing ? existing.title : (input.length > 40 ? input.substring(0, 37) + '...' : input);
+    const existing = previousMessages.length > 0 ? previousMessages[0] : null;
+
+    // Generate a descriptive title (not just one word)
+    let title = 'New Chat';
+    if (existing) {
+      title = existing.title;
+    } else {
+      // Logic for better titles: 
+      // Skip generic small talk for the title if it's the first message
+      const words = input.trim().split(/\s+/);
+      const isSmallTalk = words.length <= 2 && /^(hi|hello|hey|yo|help|test|hi di)$/i.test(words[0]);
+      
+      if (isSmallTalk) {
+        title = "New " + (type === 'code' ? 'Development' : type === 'debug' ? 'Debugging' : 'Review') + " Chat";
+      } else {
+        title = words.slice(0, 5).join(' ');
+        if (words.length > 5) title += '...';
+      }
+    }
 
     // Save to database
     const newQuery = new Query({
@@ -122,17 +139,28 @@ exports.askAgent = async (req, res) => {
   }
 };
 
+exports.getChatThread = async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    const thread = await Query.find({ sessionId }).sort({ createdAt: 1 });
+    return res.status(200).json({
+      success: true,
+      data: thread
+    });
+  } catch (error) {
+    console.error('Error in getChatThread:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
 exports.getHistory = async (req, res) => {
   try {
-    // Group by sessionId to return only one entry per conversation
-    // We take the 'latest' entry for each session
     const history = await Query.aggregate([
       { $sort: { createdAt: -1 } },
       { $group: {
           _id: "$sessionId",
           title: { $first: "$title" },
           createdAt: { $first: "$createdAt" },
-          // Keep common fields for UI compatibility
           input: { $first: "$input" },
           output: { $first: "$output" },
           type: { $first: "$type" },
@@ -153,7 +181,7 @@ exports.getHistory = async (req, res) => {
 
 exports.deleteHistory = async (req, res) => {
   try {
-    const { id } = req.params; // id issessionId now in many contexts or _id
+    const { id } = req.params; 
     await Query.deleteMany({ sessionId: id });
     return res.status(200).json({ success: true });
   } catch (error) {

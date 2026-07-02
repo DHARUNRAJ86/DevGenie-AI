@@ -61,22 +61,54 @@ const ChatInterface = ({ onSubmit, loading, messages = [], placeholder }) => {
           {messages.map((msg, idx) => (
             <div key={idx} className={msg.role === 'user' ? 'user-msg-wrapper' : 'bot-msg-wrapper'}>
               {msg.role === 'user' ? (
-                <div className="user-query-display">{msg.content}</div>
+                <div className="user-query-display">
+                  {msg.content}
+                  <button className="user-msg-copy-btn" onClick={() => handleCopy(msg.content)} title="Copy message">
+                    <Copy size={12} />
+                  </button>
+                </div>
               ) : (
                 <div className="bot-response-display">
                   <div className="bot-response-header">
                     <Bot size={15} /> DevGenie AI
                   </div>
                   <div className="output-content">
-                     <ReactMarkdown>{msg.content}</ReactMarkdown>
+                     <ReactMarkdown
+                       components={{
+                         code({node, inline, className, children, ...props}) {
+                           const match = /language-(\w+)/.exec(className || '');
+                           const codeContent = String(children).replace(/\n$/, '');
+                           return !inline ? (
+                             <div className="code-block-wrapper">
+                               <div className="code-block-header">
+                                 <span>{match ? match[1] : 'code'}</span>
+                                 <button 
+                                   className="inline-copy-btn" 
+                                   onClick={() => handleCopy(codeContent)}
+                                 >
+                                   <Copy size={12} /> Copy
+                                 </button>
+                               </div>
+                               <pre {...props}>
+                                 <code className={className}>{children}</code>
+                               </pre>
+                             </div>
+                           ) : (
+                             <code className={className} {...props}>
+                               {children}
+                             </code>
+                           );
+                         }
+                       }}
+                     >
+                       {msg.content}
+                     </ReactMarkdown>
                   </div>
-                  {idx === messages.length - 1 && loading ? (
-                     <Loader2 size={18} className="loader" style={{ marginTop: '0.5rem' }} />
-                  ) : (
+                  <div className="bot-response-footer">
                     <button className="copy-btn" onClick={() => handleCopy(msg.content)}>
-                      {copied ? <><Check size={13} color="#4ade80" /> Copied</> : <><Copy size={13} /> Copy</>}
+                      {copied ? <><Check size={13} color="#4ade80" /> Copied</> : <><Copy size={13} /> Copy chat</>}
                     </button>
-                  )}
+                  </div>
                 </div>
               )}
             </div>

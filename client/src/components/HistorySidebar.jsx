@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
 import { X, Plus, Search, Library, Box, LayoutGrid, Terminal, ChevronDown, Bot } from 'lucide-react';
 
-const HistorySidebar = ({ history, onHistorySelect, onHistoryDelete, onNewChat, onSearchToggle }) => {
+const HistorySidebar = ({ 
+  history, onHistorySelect, onHistoryDelete, onNewChat, 
+  onSearchToggle, isSearchOpen, searchQuery, setSearchQuery 
+}) => {
   const [activeItem, setActiveItem] = useState(null);
 
   const navItems = [
     { id: 'search', icon: <Search size={16} />, label: 'Search chats', action: onSearchToggle },
-    { id: 'library', icon: <Library size={16} />, label: 'Library', action: null },
-    { id: 'projects', icon: <Box size={16} />, label: 'Projects', action: null },
-    { id: 'apps', icon: <LayoutGrid size={16} />, label: 'Apps', action: null },
-    { id: 'codex', icon: <Terminal size={16} />, label: 'Codex', action: null },
+    { id: 'library', icon: <Library size={16} />, label: 'Library', action: () => alert("Library coming soon!") },
+    { id: 'projects', icon: <Box size={16} />, label: 'Projects', action: () => alert("Projects coming soon!") },
+    { id: 'apps', icon: <LayoutGrid size={16} />, label: 'Apps', action: () => alert("Apps coming soon!") },
+    { id: 'codex', icon: <Terminal size={16} />, label: 'Codex', action: () => alert("Codex coming soon!") },
   ];
 
   return (
@@ -33,17 +36,30 @@ const HistorySidebar = ({ history, onHistorySelect, onHistoryDelete, onNewChat, 
         </div>
 
         {navItems.map(item => (
-          <div
-            key={item.id}
-            className={`sidebar-utility-item${activeItem === item.id ? ' nav-active' : ''}`}
-            onClick={() => {
-              setActiveItem(item.id);
-              if (item.action) item.action();
-            }}
-          >
-            {item.icon}
-            <span>{item.label}</span>
-          </div>
+          <React.Fragment key={item.id}>
+            <div
+              className={`sidebar-utility-item${activeItem === item.id || (item.id === 'search' && isSearchOpen) ? ' nav-active' : ''}`}
+              onClick={() => {
+                setActiveItem(item.id);
+                if (item.action) item.action();
+              }}
+            >
+              {item.icon}
+              <span>{item.label}</span>
+            </div>
+            {item.id === 'search' && isSearchOpen && (
+              <div className="search-input-container">
+                <input
+                  autoFocus
+                  type="text"
+                  className="search-input"
+                  placeholder="Search your chats..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+            )}
+          </React.Fragment>
         ))}
       </div>
 

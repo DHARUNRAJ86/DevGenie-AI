@@ -6,6 +6,16 @@ import AgentSelector from './components/AgentSelector';
 
 const API_URL = 'http://localhost:5000/api';
 
+const GREETINGS = [
+  "What's on your mind today?",
+  "Ready when you are.",
+  "How can I help you build today?",
+  "Let's create something amazing.",
+  "Describe your next big project.",
+  "Need a hand with some code?",
+  "Tell me what you're thinking about."
+];
+
 function App() {
   const [selectedAgent, setSelectedAgent] = useState('code');
   const [loading, setLoading] = useState(false);
@@ -13,24 +23,16 @@ function App() {
   const [history, setHistory] = useState([]);
   const [greetingIndex, setGreetingIndex] = useState(0);
   const [currentSessionId, setCurrentSessionId] = useState(null);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const messagesEndRef = useRef(null);
-
-  const GREETINGS = [
-    "What's on your mind today?",
-    "Ready when you are.",
-    "How can I help you build today?",
-    "Let's create something amazing.",
-    "Describe your next big project.",
-    "Need a hand with some code?",
-    "Tell me what you're thinking about."
-  ];
 
   useEffect(() => {
     const interval = setInterval(() => {
       setGreetingIndex((prev) => (prev + 1) % GREETINGS.length);
     }, 300000); // 5 minutes (300,000 ms)
     return () => clearInterval(interval);
-  }, [GREETINGS.length]);
+  }, []);
 
   useEffect(() => { fetchHistory(); }, []);
 
@@ -82,13 +84,31 @@ function App() {
     }
   };
 
-  const handleHistorySelect = (item) => {
+  const handleHistorySelect = async (item) => {
+    setLoading(true);
     setSelectedAgent(item.type);
-    setCurrentSessionId(item.sessionId); // Load session
-    setMessages([
-      { role: 'user', content: item.input },
-      { role: 'assistant', content: item.output }
-    ]);
+    setCurrentSessionId(item.sessionId);
+    
+    try {
+      const res = await axios.get(`${API_URL}/thread/${item.sessionId}`);
+      if (res.data.success) {
+        const threadMessages = [];
+        res.data.data.forEach(msg => {
+          threadMessages.push({ role: 'user', content: msg.input });
+          threadMessages.push({ role: 'assistant', content: msg.output });
+        });
+        setMessages(threadMessages);
+      }
+    } catch (err) {
+      console.error('Failed to fetch thread', err);
+      // Fallback to the single pair if thread fetch fails
+      setMessages([
+        { role: 'user', content: item.input },
+        { role: 'assistant', content: item.output }
+      ]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleHistoryDelete = async (id) => {
@@ -112,10 +132,14 @@ function App() {
   return (
     <div className="app-container">
       <HistorySidebar
-        history={history}
+        history={history.filter(h => h && h.title && h.title.toLowerCase().includes(searchQuery.toLowerCase()))}
         onHistorySelect={handleHistorySelect}
         onHistoryDelete={handleHistoryDelete}
         onNewChat={handleNewChat}
+        onSearchToggle={() => setIsSearchOpen(!isSearchOpen)}
+        isSearchOpen={isSearchOpen}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
       />
 
       <main className="main-content">

@@ -5,6 +5,7 @@
   --border-light: rgba(255, 255, 255, 0.12);
   --text-primary: #f0f0f0;
   --text-secondary: #a0a0a5;
+  --text-accent: #ffffff;
   --code-bg: #111111;
 }
 
@@ -533,4 +534,126 @@ textarea.prompt-input::placeholder { color: #666; font-size: 0.97rem; }
   font-weight: 500;
   margin: 0;
   letter-spacing: -0.01em;
+}
+
+
+/* Search input styling */
+.search-input-container {
+  padding: 0 0.85rem 0.5rem;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.search-input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 6px 10px;
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.search-input:focus {
+  border-color: var(--text-accent);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+
+/* Code block and copy styling */
+.code-block-wrapper {
+  margin: 1rem 0;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border-light);
+  background: var(--code-bg);
+}
+
+.code-block-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--border-light);
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.inline-copy-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.inline-copy-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.bot-response-footer {
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.output-content pre {
+  margin: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+}
+
+
+/* User message copy button */
+.user-query-display {
+  position: relative;
+  transition: padding-right 0.2s;
+}
+
+.user-query-display:hover {
+  padding-right: 2.5rem;
+}
+
+.user-msg-copy-btn {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: var(--text-secondary);
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.2s;
+}
+
+.user-query-display:hover .user-msg-copy-btn {
+  opacity: 1;
+}
+
+.user-msg-copy-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
 }
