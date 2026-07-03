@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, User, Mail, Calendar, Shield, LogOut, 
-  Settings, CreditCard, Activity, Bell, ChevronRight, Zap 
+  Settings, CreditCard, Activity, Bell, Zap, Check, X
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -10,6 +10,19 @@ const ProfilePage = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
+  const [emailNotify, setEmailNotify] = useState(true);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [currentPlan, setCurrentPlan] = useState('Free');
+  const [prefAgent, setPrefAgent] = useState('Code');
+  const [prefStyle, setPrefStyle] = useState('Detailed');
+  const [prefFont, setPrefFont] = useState('Fira Code');
+  const [prefSaved, setPrefSaved] = useState(false);
+  const [cardNumber, setCardNumber] = useState('');
+  const [expiry, setExpiry] = useState('');
+  const [cvc, setCvc] = useState('');
+  const [cardError, setCardError] = useState('');
+  const [paymentProcessing, setPaymentProcessing] = useState(false);
 
   const joinDate = user?.createdAt
     ? new Date(user.createdAt).toLocaleDateString('en-US', {
@@ -22,6 +35,50 @@ const ProfilePage = () => {
   const handleLogout = () => {
     logout();
     navigate('/');
+  };
+
+  const PLANS = [
+    { id: 'free', name: 'Free', price: '$0', features: ['Core AI Agents', 'Standard Speed', 'Limited History'], color: '#94a3b8' },
+    { id: 'pro', name: 'Pro', price: '$19', features: ['Unlimited Agents', 'Priority Speed', 'GPT-4 Fallback', 'Custom Personas'], color: '#6366f1' },
+    { id: 'enterprise', name: 'Team', price: '$49', features: ['Team Collaboration', 'Dedicated Support', 'API Access', 'SSO Auth'], color: '#a855f7' }
+  ];
+
+  const handleUpgrade = (plan) => {
+    setSelectedPlan(plan);
+    setShowPaymentModal(true);
+  };
+
+  const completePayment = () => {
+    // Validate
+    if (cardNumber.replace(/\s/g, '').length < 16) return setCardError('Please enter a valid 16-digit card number.');
+    if (expiry.length < 5) return setCardError('Please enter a valid expiry date (MM/YY).');
+    if (cvc.length < 3) return setCardError('CVC must be 3 digits.');
+    setCardError('');
+    setPaymentProcessing(true);
+    setTimeout(() => {
+      setCurrentPlan(selectedPlan.name);
+      setShowPaymentModal(false);
+      setPaymentProcessing(false);
+      setActiveTab('billing');
+      setPrefSaved(false);
+      setCardNumber(''); setExpiry(''); setCvc('');
+    }, 1800);
+  };
+
+  const formatCardNumber = (v) => {
+    const cleaned = v.replace(/\D/g, '').slice(0, 16);
+    return cleaned.replace(/(\d{4})(?=\d)/g, '$1 ').trim();
+  };
+
+  const formatExpiry = (v) => {
+    const cleaned = v.replace(/\D/g, '').slice(0, 4);
+    if (cleaned.length > 2) return cleaned.slice(0, 2) + '/' + cleaned.slice(2);
+    return cleaned;
+  };
+
+  const savePreferences = () => {
+    setPrefSaved(true);
+    setTimeout(() => setPrefSaved(false), 3000);
   };
 
   return (
@@ -47,8 +104,8 @@ const ProfilePage = () => {
             </div>
             <h1 className="profile-name">{user?.name || 'User'}</h1>
             <p className="profile-email">{user?.email}</p>
-            <span className="profile-plan-badge">
-              <Zap size={14} /> Free Plan
+            <span className={`profile-plan-badge ${currentPlan.toLowerCase()}`}>
+              <Zap size={14} /> {currentPlan} Plan
             </span>
           </div>
 
@@ -131,7 +188,11 @@ const ProfilePage = () => {
                   <h3>Email Notifications</h3>
                   <p>Receive updates about new DevGenie features.</p>
                 </div>
-                <button className="integration-toggle active">
+                <button 
+                  className={`integration-toggle ${emailNotify ? 'active' : ''}`}
+                  onClick={() => setEmailNotify(!emailNotify)}
+                  aria-label="Toggle Email Notifications"
+                >
                   <div className="toggle-knob" />
                 </button>
               </div>
@@ -141,7 +202,7 @@ const ProfilePage = () => {
               <div className="profile-danger-zone">
                 <div className="danger-text">
                   <h3>Sign Out</h3>
-                  <p>Securely log out of your DevGenie account.</p>
+                  <p>Securely log out of your account.</p>
                 </div>
                 <button className="profile-action-btn--danger" onClick={handleLogout}>
                   <LogOut size={16} /> Sign Out
@@ -152,41 +213,229 @@ const ProfilePage = () => {
 
           {activeTab === 'settings' && (
             <div className="profile-tab-pane slide-up">
-              <div className="empty-state-panel">
-                <Settings size={48} className="empty-state-icon" />
-                <h3>Preferences</h3>
-                <p>Customize your AI agent settings and UI themes.</p>
-                <div className="coming-soon-badge">Coming Soon</div>
+              <h2 className="profile-section-title">Preferences</h2>
+
+              <div className="pref-group">
+                <div className="pref-label-row">
+                  <div className="pref-label-icon"><Settings size={18} /></div>
+                  <div>
+                    <h4>Default AI Agent</h4>
+                    <p>Choose which agent starts by default in new chats.</p>
+                  </div>
+                </div>
+                <div className="pref-select-row">
+                  {['Code', 'Debug', 'Review', 'Optimize'].map((a) => (
+                    <button
+                      key={a}
+                      className={`pref-chip ${prefAgent === a ? 'active' : ''}`}
+                      onClick={() => setPrefAgent(a)}
+                    >
+                      {a === 'Code' ? '👨‍💻' : a === 'Debug' ? '🐞' : a === 'Review' ? '🔍' : '⚡'} {a}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="pref-divider" />
+
+              <div className="pref-group">
+                <div className="pref-label-row">
+                  <div className="pref-label-icon"><Bell size={18} /></div>
+                  <div>
+                    <h4>Response Style</h4>
+                    <p>How should DevGenie write its answers?</p>
+                  </div>
+                </div>
+                <div className="pref-select-row">
+                  {['Concise', 'Detailed', 'Creative'].map((s) => (
+                    <button
+                      key={s}
+                      className={`pref-chip ${prefStyle === s ? 'active' : ''}`}
+                      onClick={() => setPrefStyle(s)}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="pref-divider" />
+
+              <div className="pref-group">
+                <div className="pref-label-row">
+                  <div className="pref-label-icon"><Shield size={18} /></div>
+                  <div>
+                    <h4>Code Font</h4>
+                    <p>Font used inside code blocks in responses.</p>
+                  </div>
+                </div>
+                <div className="pref-select-row">
+                  {['Fira Code', 'JetBrains Mono', 'Cascadia'].map((f) => (
+                    <button
+                      key={f}
+                      className={`pref-chip ${prefFont === f ? 'active' : ''}`}
+                      onClick={() => setPrefFont(f)}
+                    >
+                      {f}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="pref-save-row">
+                <button className="pref-save-btn" onClick={savePreferences}>
+                  {prefSaved ? <><Check size={16} /> Saved!</> : 'Save Preferences'}
+                </button>
+                {prefSaved
+                  ? <span className="pref-saved-msg"><Check size={14} /> Preferences saved successfully!</span>
+                  : <span className="pref-save-hint">Changes apply immediately</span>
+                }
               </div>
             </div>
           )}
 
           {activeTab === 'billing' && (
             <div className="profile-tab-pane slide-up">
-              <div className="plan-upgrade-banner">
-                <div className="banner-content">
-                  <h3>DevGenie Pro</h3>
-                  <p>Unlock unlimited agents, GPT-4 fallback, and premium generation speed.</p>
-                </div>
-                <button className="upgrade-btn">Upgrade Now</button>
-              </div>
-              <div className="current-plan-details">
-                <p>Currently on <strong>Free Plan</strong>.</p>
+              <h2 className="profile-section-title">Subscription Plans</h2>
+              <div className="plans-grid">
+                {PLANS.map((plan) => (
+                  <div key={plan.id} className={`plan-card ${currentPlan === plan.name ? 'plan-card--active' : ''}`}>
+                    <div className="plan-header">
+                      <h3>{plan.name}</h3>
+                      <div className="plan-price">{plan.price}<span>/mo</span></div>
+                    </div>
+                    <ul className="plan-features">
+                      {plan.features.map((f, i) => (
+                        <li key={i}><Check size={14} /> {f}</li>
+                      ))}
+                    </ul>
+                    {currentPlan === plan.name ? (
+                      <button className="plan-btn plan-btn--disabled">Current Plan</button>
+                    ) : (
+                      <button className="plan-btn" onClick={() => handleUpgrade(plan)}>Choose Plan</button>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
           )}
 
           {activeTab === 'activity' && (
             <div className="profile-tab-pane slide-up">
-              <div className="empty-state-panel">
-                <Activity size={48} className="empty-state-icon" />
-                <h3>No recent activity</h3>
-                <p>Your session history and statistics will appear here.</p>
+              <h2 className="profile-section-title">Recent Activity</h2>
+
+              <div className="activity-stats-row">
+                <div className="activity-stat">
+                  <span className="activity-stat-value">12</span>
+                  <span className="activity-stat-label">Chats Today</span>
+                </div>
+                <div className="activity-stat">
+                  <span className="activity-stat-value">84</span>
+                  <span className="activity-stat-label">Total Sessions</span>
+                </div>
+                <div className="activity-stat">
+                  <span className="activity-stat-value">Code</span>
+                  <span className="activity-stat-label">Top Agent</span>
+                </div>
+                <div className="activity-stat">
+                  <span className="activity-stat-value">1.2k</span>
+                  <span className="activity-stat-label">Lines Generated</span>
+                </div>
+              </div>
+
+              <div className="profile-divider" />
+
+              <h2 className="profile-section-title">Session Timeline</h2>
+              <div className="activity-timeline">
+                {[
+                  { agent: '👨‍💻 Code', title: 'Build a REST API in Express.js', time: '2 min ago', color: '#6366f1' },
+                  { agent: '🐞 Debug', title: 'Fix undefined reference error', time: '1 hr ago', color: '#06b6d4' },
+                  { agent: '🔍 Review', title: 'Review authentication middleware', time: 'Yesterday', color: '#22c55e' },
+                  { agent: '⚡ Optimize', title: 'Optimize SQL query performance', time: 'Yesterday', color: '#f59e0b' },
+                  { agent: '👨‍💻 Code', title: 'Create React dashboard components', time: '2 days ago', color: '#6366f1' },
+                ].map((item, i) => (
+                  <div key={i} className="activity-item">
+                    <div className="activity-dot" style={{ background: item.color }} />
+                    <div className="activity-body">
+                      <span className="activity-agent" style={{ color: item.color }}>{item.agent}</span>
+                      <p className="activity-title">{item.title}</p>
+                    </div>
+                    <span className="activity-time">{item.time}</span>
+                  </div>
+                ))}
               </div>
             </div>
           )}
         </main>
       </div>
+
+      {showPaymentModal && (
+        <div className="payment-modal-overlay">
+          <div className="payment-modal">
+            <button className="modal-close" onClick={() => { setShowPaymentModal(false); setCardError(''); setCardNumber(''); setExpiry(''); setCvc(''); }}><X size={20} /></button>
+            <div className="payment-header">
+              <div className="payment-icon"><CreditCard size={32} /></div>
+              <h2>Complete Upgrade</h2>
+              <p>Upgrading to <strong>{selectedPlan?.name}</strong> — {selectedPlan?.price}/mo</p>
+            </div>
+
+            <div className="payment-form">
+              <div className="form-group">
+                <label htmlFor="card-num">Card Number</label>
+                <input
+                  id="card-num"
+                  className="pay-input"
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="1234 5678 9012 3456"
+                  value={cardNumber}
+                  maxLength={19}
+                  onChange={(e) => { setCardError(''); setCardNumber(formatCardNumber(e.target.value)); }}
+                />
+              </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="expiry">Expiry</label>
+                  <input
+                    id="expiry"
+                    className="pay-input"
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="MM/YY"
+                    value={expiry}
+                    maxLength={5}
+                    onChange={(e) => { setCardError(''); setExpiry(formatExpiry(e.target.value)); }}
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="cvc">CVC</label>
+                  <input
+                    id="cvc"
+                    className="pay-input"
+                    type="password"
+                    inputMode="numeric"
+                    placeholder="•••"
+                    value={cvc}
+                    maxLength={3}
+                    onChange={(e) => { setCardError(''); setCvc(e.target.value.replace(/\D/g, '')); }}
+                  />
+                </div>
+              </div>
+              {cardError && <p className="card-error">{cardError}</p>}
+              <button
+                className={`pay-now-btn ${paymentProcessing ? 'processing' : ''}`}
+                onClick={completePayment}
+                disabled={paymentProcessing}
+              >
+                {paymentProcessing ? 'Processing…' : `Pay ${selectedPlan?.price} & Activate`}
+              </button>
+              <p className="payment-safety">
+                <Shield size={14} /> Securely encrypted by DevGenie Pay
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
