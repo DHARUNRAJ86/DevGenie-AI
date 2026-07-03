@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { X, Plus, Search, Library, Box, LayoutGrid, Terminal, ChevronDown, Bot } from 'lucide-react';
+import { X, Plus, Search, Library, Box, LayoutGrid, Terminal, ChevronDown, Bot, LogOut } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const HistorySidebar = ({ 
   history, onHistorySelect, onHistoryDelete, onNewChat, 
   onSearchToggle, isSearchOpen, searchQuery, setSearchQuery 
 }) => {
   const [activeItem, setActiveItem] = useState(null);
+  const { logout, user } = useAuth();
 
   const navItems = [
     { id: 'search', icon: <Search size={16} />, label: 'Search chats', action: onSearchToggle },
@@ -89,6 +91,18 @@ const HistorySidebar = ({
             No recents
           </div>
         )}
+      </div>
+      <div className="sidebar-footer">
+        <div className="user-profile">
+          <div className="user-avatar">{user?.name?.charAt(0) || 'U'}</div>
+          <div className="user-info">
+            <span className="user-name">{user?.name}</span>
+            <span className="user-status">Free Plan</span>
+          </div>
+        </div>
+        <button className="logout-btn" onClick={logout} title="Log Out">
+          <LogOut size={16} />
+        </button>
       </div>
     </aside>
   );

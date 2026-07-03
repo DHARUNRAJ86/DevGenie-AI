@@ -14,7 +14,7 @@ exports.askAgent = async (req, res) => {
     }
 
     // Fetch previous messages for context
-    const previousMessages = await Query.find({ sessionId }).sort({ createdAt: 1 });
+    const previousMessages = await Query.find({ sessionId, userId: req.user.id }).sort({ createdAt: 1 });
     
     // Modern Gemini multi-turn format
     const contents = [];
@@ -108,6 +108,7 @@ exports.askAgent = async (req, res) => {
     // Save to database
     const newQuery = new Query({
       sessionId,
+      userId: req.user.id,
       title,
       type,
       input,
@@ -142,7 +143,7 @@ exports.askAgent = async (req, res) => {
 exports.getChatThread = async (req, res) => {
   try {
     const { sessionId } = req.params;
-    const thread = await Query.find({ sessionId }).sort({ createdAt: 1 });
+    const thread = await Query.find({ sessionId, userId: req.user.id }).sort({ createdAt: 1 });
     return res.status(200).json({
       success: true,
       data: thread
@@ -156,6 +157,7 @@ exports.getChatThread = async (req, res) => {
 exports.getHistory = async (req, res) => {
   try {
     const history = await Query.aggregate([
+      { $match: { userId: req.user._id } },
       { $sort: { createdAt: -1 } },
       { $group: {
           _id: "$sessionId",
@@ -182,7 +184,7 @@ exports.getHistory = async (req, res) => {
 exports.deleteHistory = async (req, res) => {
   try {
     const { id } = req.params; 
-    await Query.deleteMany({ sessionId: id });
+    await Query.deleteMany({ sessionId: id, userId: req.user.id });
     return res.status(200).json({ success: true });
   } catch (error) {
     console.error('Error in deleteHistory:', error);

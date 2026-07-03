@@ -5,6 +5,11 @@ const QuerySchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  userId: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'User',
+    required: true
+  },
   title: {
     type: String,
     default: 'New Chat'

@@ -1,11 +1,18 @@
 const express = require('express');
 const router = express.Router();
 const aiController = require('../controllers/aiController');
+const authController = require('../controllers/authController');
+const { protect } = require('../middleware/authMiddleware');
 
-// Routes
-router.post('/ask', aiController.askAgent);
-router.get('/history', aiController.getHistory);
-router.get('/thread/:sessionId', aiController.getChatThread);
-router.delete('/history/:id', aiController.deleteHistory);
+// Auth routes
+router.post('/auth/signup', authController.signup);
+router.post('/auth/login', authController.login);
+router.get('/auth/me', protect, authController.getMe);
+
+// AI Routes
+router.post('/ask', protect, aiController.askAgent);
+router.get('/history', protect, aiController.getHistory);
+router.get('/thread/:sessionId', protect, aiController.getChatThread);
+router.delete('/history/:id', protect, aiController.deleteHistory);
 
 module.exports = router;

@@ -1,8 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import axios from 'axios';
 import HistorySidebar from './components/HistorySidebar';
 import ChatInterface from './components/ChatInterface';
 import AgentSelector from './components/AgentSelector';
+import LandingPage from './pages/LandingPage';
+import AuthPage from './pages/AuthPage';
+import LearnMorePage from './pages/LearnMorePage';
+import ProtectedRoute from './components/ProtectedRoute';
+import { AuthProvider, useAuth } from './context/AuthContext';
 
 const API_URL = 'http://localhost:5000/api';
 
@@ -16,7 +22,7 @@ const GREETINGS = [
   "Tell me what you're thinking about."
 ];
 
-function App() {
+function ChatApp() {
   const [selectedAgent, setSelectedAgent] = useState('code');
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState([]);
@@ -26,15 +32,19 @@ function App() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const messagesEndRef = useRef(null);
+  
+  const { user } = useAuth();
 
   useEffect(() => {
     const interval = setInterval(() => {
       setGreetingIndex((prev) => (prev + 1) % GREETINGS.length);
-    }, 300000); // 5 minutes (300,000 ms)
+    }, 300000); // 5 minutes
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => { fetchHistory(); }, []);
+  useEffect(() => { 
+    if (user) fetchHistory(); 
+  }, [user]);
 
   useEffect(() => {
     if (messages.length > 0 || loading) {
@@ -53,7 +63,6 @@ function App() {
 
   const handleSubmit = async (input) => {
     setLoading(true);
-    // Add user message and a placeholder for bot response
     const userMsg = { role: 'user', content: input };
     setMessages(prev => [...prev, userMsg]);
 
@@ -69,14 +78,12 @@ function App() {
       if (res.data.success) {
         const botMsg = { role: 'assistant', content: res.data.data.output };
         setMessages(prev => [...prev, botMsg]);
-        
-        // Refetch history to get grouped sessions correctly
         fetchHistory();
       }
     } catch (err) {
       const errorMsg = { 
         role: 'assistant', 
-        content: err.response?.data?.details || 'An error occurred. Make sure the backend is running.' 
+        content: err.response?.data?.details || 'An error occurred.' 
       };
       setMessages(prev => [...prev, errorMsg]);
     } finally {
@@ -101,7 +108,6 @@ function App() {
       }
     } catch (err) {
       console.error('Failed to fetch thread', err);
-      // Fallback to the single pair if thread fetch fails
       setMessages([
         { role: 'user', content: item.input },
         { role: 'assistant', content: item.output }
@@ -114,17 +120,16 @@ function App() {
   const handleHistoryDelete = async (id) => {
     try {
       const res = await axios.delete(`${API_URL}/history/${id}`);
-      if (res.data.success) setHistory(history.filter(item => item._id !== id));
+      if (res.data.success) setHistory(history.filter(item => item.sessionId !== id));
     } catch (err) {
       console.error('Failed to delete', err);
     }
   };
 
-  // New chat resets everything
   const handleNewChat = () => {
     setMessages([]);
     setSelectedAgent('code');
-    setCurrentSessionId(null); // Reset session to generate new one on first msg
+    setCurrentSessionId(null);
   };
 
   const hasContent = messages.length > 0;
@@ -176,6 +181,29 @@ function App() {
         </div>
       </main>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/auth" element={<AuthPage />} />
+          <Route path="/learn-more" element={<LearnMorePage />} />
+          <Route 
+            path="/chat" 
+            element={
+              <ProtectedRoute>
+                <ChatApp />
+              </ProtectedRoute>
+            } 
+          />
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 
