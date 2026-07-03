@@ -17,7 +17,7 @@ const QuerySchema = new mongoose.Schema({
   type: {
     type: String,
     required: true,
-    enum: ['code', 'debug', 'review']
+    enum: ['code', 'debug', 'review', 'optimize']
   },
   input: {
     type: String,
