@@ -140,7 +140,7 @@ function HistoryItem({ item, isActive, onSelect, onDelete, onRename, onPin }) {
 const HistorySidebar = ({
   history, activeSessionId, onHistorySelect, onHistoryDelete, onHistoryRename,
   onHistoryPin, onNewChat, onSearchToggle, isSearchOpen, searchQuery, setSearchQuery, onProfileClick,
-  activePanel, onPanelSelect,
+  activePanel, onPanelSelect, theme, onThemeChange,
 }) => {
   const { logout, user } = useAuth();
 
@@ -245,10 +245,36 @@ const HistorySidebar = ({
 
       {/* Footer */}
       <div className="sidebar-footer">
-        <div className="sidebar-footer-labels">
+        {/* Theme switcher */}
+        <div className="theme-switcher">
+          <span className="theme-label">Theme</span>
+          <div className="theme-options">
+            <button
+              className={`theme-btn theme-btn--dark ${theme === 'dark' ? 'theme-btn--active' : ''}`}
+              onClick={() => onThemeChange('dark')}
+              title="Dark Theme"
+            >
+              <span className="theme-swatch theme-swatch--dark" />
+              Dark
+            </button>
+            <button
+              className={`theme-btn theme-btn--light ${theme === 'light' ? 'theme-btn--active' : ''}`}
+              onClick={() => onThemeChange('light')}
+              title="Light Theme"
+            >
+              <span className="theme-swatch theme-swatch--light" />
+              Light
+            </button>
+          </div>
+        </div>
+
+        {/* Profile label */}
+        <div className="footer-label-row">
           <span className="footer-label-text">Profile</span>
           <span className="footer-label-text">Log Out</span>
         </div>
+
+        {/* Controls */}
         <div className="sidebar-footer-controls">
           <div className="user-profile" onClick={onProfileClick} style={{ cursor: 'pointer' }} title="View Profile">
             <div className="user-avatar">{user?.name?.charAt(0)?.toUpperCase() || 'U'}</div>

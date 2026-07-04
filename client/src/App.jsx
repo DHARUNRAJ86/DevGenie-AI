@@ -35,9 +35,20 @@ function ChatApp() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showAgentPanel, setShowAgentPanel] = useState(false);
+  const [theme, setTheme] = useState(() => localStorage.getItem('devgenie-theme') || 'dark');
   const messagesEndRef = useRef(null);
 
   const { user } = useAuth();
+
+  // Apply theme on mount and on change
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('devgenie-theme', theme);
+  }, [theme]);
+
+  const handleThemeChange = (newTheme) => {
+    setTheme(newTheme);
+  };
 
   useEffect(() => {
     const interval = setInterval(() => {
