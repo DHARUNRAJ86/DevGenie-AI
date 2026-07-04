@@ -72,6 +72,64 @@ DevGenie AI is a production-quality **Agentic AI** developer workspace built wit
 
 ---
 
+## 📁 Project Structure
+
+```
+DevGenie-AI/
+├── client/                     # React Frontend Application
+│   ├── src/
+│   │   ├── components/         # Reusable structural components (Sidebar, Chat, Agent Selector)
+│   │   ├── context/            # AuthContext provider using React Context API
+│   │   ├── pages/              # View pages (Landing, Authentication, Profile, Learn More)
+│   │   ├── App.jsx             # Main router configuration & panel layout controller
+│   │   ├── index.css           # Premium stylesheet with full Dark & Light mode customization
+│   │   └── main.jsx            # Application entry point
+│   ├── package.json
+│   └── vite.config.js          # Vite build config
+│
+└── server/                     # Express REST Backend API
+    ├── controllers/            # Controller layers (AI Agent Router, Authentication)
+    ├── middleware/             # Request security filters & JWT validation
+    ├── models/                 # Database Schema (Users, Chat History Sessions)
+    ├── routes/                 # Express API Endpoint routes
+    │   └── api.js              # Combined API Gateway Router
+    ├── server.js               # Database connection setup & server bootstrap
+    └── package.json
+```
+
+---
+
+## 🔌 REST API Endpoints
+
+All endpoints are prefixed with `/api` and require a valid JWT bearer token in the `Authorization` header where marked as **[Protected]**.
+
+### 🔐 Authentication & Profile
+
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| `POST` | `/api/auth/signup` | Public | Register a new developer account |
+| `POST` | `/api/auth/login` | Public | Authenticate a user and receive a JWT authorization token |
+| `GET` | `/api/auth/me` | **[Protected]** | Retrieves current profile statistics and plan metadata |
+| `PUT` | `/api/auth/plan` | **[Protected]** | Updates the active plan tier subscription |
+
+### 🤖 AI Agent & Chat Stream
+
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| `POST` | `/api/ask` | **[Protected]** | Dispatches a prompt to the active agent mode (code/debug/review/optimize) |
+| `GET` | `/api/history` | **[Protected]** | Retrieves a list of past chat sessions categorized by date |
+| `GET` | `/api/thread/:sessionId` | **[Protected]** | Fetches the full list of prompt-response pairs for a chat thread |
+| `DELETE` | `/api/history/:id` | **[Protected]** | Deletes a chat session thread from the database |
+
+### 📌 Session Metadata
+
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| `PATCH` | `/api/chat/:sessionId/rename` | **[Protected]** | Renames the session title of a chat thread |
+| `PATCH` | `/api/chat/:sessionId/pin` | **[Protected]** | Toggles the pinned state of a session |
+
+---
+
 ## 🛠️ Tech Stack & Production Standards
 
 * **Frontend:** React 18, React Router v6, Context API, Lucide Icons, Vanilla CSS (Glassmorphism & Variables)
