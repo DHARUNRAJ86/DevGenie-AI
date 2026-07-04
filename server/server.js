@@ -16,7 +16,7 @@ app.use('/api', apiRoutes);
 
 // Serve frontend static build files in production
 app.use(express.static(path.join(__dirname, '../client/dist')));
-app.get('*', (req, res) => {
+app.use((req, res) => {
   if (!req.path.startsWith('/api')) {
     res.sendFile(path.resolve(__dirname, '../client', 'dist', 'index.html'));
   }
