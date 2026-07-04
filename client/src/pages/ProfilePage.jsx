@@ -1,19 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, User, Mail, Calendar, Shield, LogOut, 
   Settings, CreditCard, Activity, Bell, Zap, Check, X
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import axios from 'axios';
 
 const ProfilePage = () => {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, fetchUser } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [emailNotify, setEmailNotify] = useState(true);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
-  const [currentPlan, setCurrentPlan] = useState('Free');
+  const [currentPlan, setCurrentPlan] = useState(user?.plan || 'Free');
   const [prefAgent, setPrefAgent] = useState('Code');
   const [prefStyle, setPrefStyle] = useState('Detailed');
   const [prefFont, setPrefFont] = useState('Fira Code');
@@ -23,6 +24,13 @@ const ProfilePage = () => {
   const [cvc, setCvc] = useState('');
   const [cardError, setCardError] = useState('');
   const [paymentProcessing, setPaymentProcessing] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+
+  useEffect(() => {
+    if (user?.plan) {
+      setCurrentPlan(user.plan);
+    }
+  }, [user]);
 
   const joinDate = user?.createdAt
     ? new Date(user.createdAt).toLocaleDateString('en-US', {
@@ -48,21 +56,41 @@ const ProfilePage = () => {
     setShowPaymentModal(true);
   };
 
-  const completePayment = () => {
+  const completePayment = async () => {
     // Validate
     if (cardNumber.replace(/\s/g, '').length < 16) return setCardError('Please enter a valid 16-digit card number.');
     if (expiry.length < 5) return setCardError('Please enter a valid expiry date (MM/YY).');
     if (cvc.length < 3) return setCardError('CVC must be 3 digits.');
     setCardError('');
     setPaymentProcessing(true);
-    setTimeout(() => {
-      setCurrentPlan(selectedPlan.name);
-      setShowPaymentModal(false);
+
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.put('http://localhost:5000/api/auth/plan', 
+        { plan: selectedPlan.name },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (res.data.success) {
+        setTimeout(() => {
+          setPaymentProcessing(false);
+          setPaymentSuccess(true);
+          setCurrentPlan(selectedPlan.name);
+          fetchUser();
+        }, 1500);
+      }
+    } catch (err) {
       setPaymentProcessing(false);
-      setActiveTab('billing');
-      setPrefSaved(false);
-      setCardNumber(''); setExpiry(''); setCvc('');
-    }, 1800);
+      setCardError(err.response?.data?.error || 'Payment processing failed. Please try again.');
+    }
+  };
+
+  const handleCloseModal = () => {
+    setShowPaymentModal(false);
+    setPaymentSuccess(false);
+    setCardError('');
+    setCardNumber('');
+    setExpiry('');
+    setCvc('');
   };
 
   const formatCardNumber = (v) => {
@@ -372,67 +400,90 @@ const ProfilePage = () => {
       {showPaymentModal && (
         <div className="payment-modal-overlay">
           <div className="payment-modal">
-            <button className="modal-close" onClick={() => { setShowPaymentModal(false); setCardError(''); setCardNumber(''); setExpiry(''); setCvc(''); }}><X size={20} /></button>
-            <div className="payment-header">
-              <div className="payment-icon"><CreditCard size={32} /></div>
-              <h2>Complete Upgrade</h2>
-              <p>Upgrading to <strong>{selectedPlan?.name}</strong> — {selectedPlan?.price}/mo</p>
-            </div>
+            <button className="modal-close" onClick={handleCloseModal}><X size={20} /></button>
+            
+            {paymentSuccess ? (
+              <div className="payment-success-screen">
+                <div className="success-icon">
+                  <Check size={36} />
+                </div>
+                <h2 className="success-title">Plan Activated!</h2>
+                <div className="success-messages">
+                  <p className="success-msg-primary">
+                    Successfully activated to your account and enjoy your journey
+                  </p>
+                  <p className="success-msg-secondary">
+                    Check your profile and also logout later
+                  </p>
+                </div>
+                <button className="success-close-btn" onClick={handleCloseModal}>
+                  Start Journey
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="payment-header">
+                  <div className="payment-icon"><CreditCard size={32} /></div>
+                  <h2>Complete Upgrade</h2>
+                  <p>Upgrading to <strong>{selectedPlan?.name}</strong> — {selectedPlan?.price}/mo</p>
+                </div>
 
-            <div className="payment-form">
-              <div className="form-group">
-                <label htmlFor="card-num">Card Number</label>
-                <input
-                  id="card-num"
-                  className="pay-input"
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="1234 5678 9012 3456"
-                  value={cardNumber}
-                  maxLength={19}
-                  onChange={(e) => { setCardError(''); setCardNumber(formatCardNumber(e.target.value)); }}
-                />
-              </div>
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="expiry">Expiry</label>
-                  <input
-                    id="expiry"
-                    className="pay-input"
-                    type="text"
-                    inputMode="numeric"
-                    placeholder="MM/YY"
-                    value={expiry}
-                    maxLength={5}
-                    onChange={(e) => { setCardError(''); setExpiry(formatExpiry(e.target.value)); }}
-                  />
+                <div className="payment-form">
+                  <div className="form-group">
+                    <label htmlFor="card-num">Card Number</label>
+                    <input
+                      id="card-num"
+                      className="pay-input"
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="1234 5678 9012 3456"
+                      value={cardNumber}
+                      maxLength={19}
+                      onChange={(e) => { setCardError(''); setCardNumber(formatCardNumber(e.target.value)); }}
+                    />
+                  </div>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label htmlFor="expiry">Expiry</label>
+                      <input
+                        id="expiry"
+                        className="pay-input"
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="MM/YY"
+                        value={expiry}
+                        maxLength={5}
+                        onChange={(e) => { setCardError(''); setExpiry(formatExpiry(e.target.value)); }}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="cvc">CVC</label>
+                      <input
+                        id="cvc"
+                        className="pay-input"
+                        type="password"
+                        inputMode="numeric"
+                        placeholder="•••"
+                        value={cvc}
+                        maxLength={3}
+                        onChange={(e) => { setCardError(''); setCvc(e.target.value.replace(/\D/g, '')); }}
+                      />
+                    </div>
+                  </div>
+                  {cardError && <p className="card-error">{cardError}</p>}
+                  <button
+                    className={`pay-now-btn ${paymentProcessing ? 'processing' : ''}`}
+                    onClick={completePayment}
+                    disabled={paymentProcessing}
+                  >
+                    {paymentProcessing ? 'Processing…' : `Pay ${selectedPlan?.price} & Activate`}
+                  </button>
+                  <p className="payment-safety">
+                    <Shield size={14} /> Securely encrypted by DevGenie Pay
+                  </p>
                 </div>
-                <div className="form-group">
-                  <label htmlFor="cvc">CVC</label>
-                  <input
-                    id="cvc"
-                    className="pay-input"
-                    type="password"
-                    inputMode="numeric"
-                    placeholder="•••"
-                    value={cvc}
-                    maxLength={3}
-                    onChange={(e) => { setCardError(''); setCvc(e.target.value.replace(/\D/g, '')); }}
-                  />
-                </div>
-              </div>
-              {cardError && <p className="card-error">{cardError}</p>}
-              <button
-                className={`pay-now-btn ${paymentProcessing ? 'processing' : ''}`}
-                onClick={completePayment}
-                disabled={paymentProcessing}
-              >
-                {paymentProcessing ? 'Processing…' : `Pay ${selectedPlan?.price} & Activate`}
-              </button>
-              <p className="payment-safety">
-                <Shield size={14} /> Securely encrypted by DevGenie Pay
-              </p>
-            </div>
+              </>
+            )}
           </div>
         </div>
       )}

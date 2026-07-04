@@ -34,6 +34,7 @@ exports.signup = async (req, res) => {
           _id: user._id,
           name: user.name,
           email: user.email,
+          plan: user.plan,
           token: generateToken(user._id)
         }
       });
@@ -70,6 +71,7 @@ exports.login = async (req, res) => {
         _id: user._id,
         name: user.name,
         email: user.email,
+        plan: user.plan,
         token: generateToken(user._id)
       }
     });
@@ -87,6 +89,38 @@ exports.getMe = async (req, res) => {
     res.status(200).json({
       success: true,
       data: user
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// @desc    Update user plan
+// @route   PUT /api/auth/plan
+// @access  Private
+exports.updatePlan = async (req, res) => {
+  try {
+    const { plan } = req.body;
+    if (!plan) {
+      return res.status(400).json({ success: false, error: 'Please provide a plan' });
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+
+    user.plan = plan;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      data: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        plan: user.plan
+      }
     });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });

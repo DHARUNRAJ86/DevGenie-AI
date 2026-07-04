@@ -140,16 +140,16 @@ function HistoryItem({ item, isActive, onSelect, onDelete, onRename, onPin }) {
 const HistorySidebar = ({
   history, activeSessionId, onHistorySelect, onHistoryDelete, onHistoryRename,
   onHistoryPin, onNewChat, onSearchToggle, isSearchOpen, searchQuery, setSearchQuery, onProfileClick,
+  activePanel, onPanelSelect,
 }) => {
-  const [activeNav, setActiveNav] = useState(null);
   const { logout, user } = useAuth();
 
   const navItems = [
     { id: 'search',   icon: <Search size={16} />,     label: 'Search chats', action: onSearchToggle },
-    { id: 'library',  icon: <Library size={16} />,    label: 'Library',      action: () => alert('Library coming soon!') },
-    { id: 'projects', icon: <Box size={16} />,        label: 'Projects',     action: () => alert('Projects coming soon!') },
-    { id: 'apps',     icon: <LayoutGrid size={16} />, label: 'Apps',         action: () => alert('Apps coming soon!') },
-    { id: 'codex',    icon: <Terminal size={16} />,   label: 'Codex',        action: () => alert('Codex coming soon!') },
+    { id: 'library',  icon: <Library size={16} />,    label: 'Library',      action: () => onPanelSelect('library') },
+    { id: 'projects', icon: <Box size={16} />,        label: 'Projects',     action: () => onPanelSelect('projects') },
+    { id: 'apps',     icon: <LayoutGrid size={16} />, label: 'Apps',         action: () => onPanelSelect('apps') },
+    { id: 'playground', icon: <Terminal size={16} />,   label: 'Playground',   action: () => onPanelSelect('playground') },
   ];
 
   // Filter by search query
@@ -162,7 +162,7 @@ const HistorySidebar = ({
   return (
     <aside className="history-sidebar">
       {/* Brand */}
-      <div className="sidebar-brand">
+      <div className="sidebar-brand" onClick={() => onPanelSelect(null)}>
         <Bot size={18} />
         <span>DevGenie AI</span>
         <ChevronDown size={14} style={{ marginLeft: 'auto', opacity: 0.5 }} />
@@ -172,7 +172,7 @@ const HistorySidebar = ({
         {/* New Chat */}
         <div
           className="sidebar-utility-item new-chat"
-          onClick={() => { setActiveNav('new'); onNewChat?.(); }}
+          onClick={() => { onPanelSelect(null); onNewChat?.(); }}
         >
           <Plus size={16} />
           <span>New chat</span>
@@ -181,8 +181,16 @@ const HistorySidebar = ({
         {navItems.map((item) => (
           <React.Fragment key={item.id}>
             <div
-              className={`sidebar-utility-item${activeNav === item.id || (item.id === 'search' && isSearchOpen) ? ' nav-active' : ''}`}
-              onClick={() => { setActiveNav(item.id); item.action?.(); }}
+              className={`sidebar-utility-item${(item.id === 'search' && isSearchOpen) || (activePanel === item.id) ? ' nav-active' : ''}`}
+              onClick={() => {
+                if (item.id !== 'search') {
+                  // If we are clicking library/projects/apps/playground, open it
+                  item.action?.();
+                } else {
+                  onPanelSelect(null); // Close active panels when searching
+                  item.action?.();
+                }
+              }}
             >
               {item.icon}
               <span>{item.label}</span>
@@ -215,8 +223,11 @@ const HistorySidebar = ({
                 <HistoryItem
                   key={item.sessionId}
                   item={item}
-                  isActive={item.sessionId === activeSessionId}
-                  onSelect={onHistorySelect}
+                  isActive={item.sessionId === activeSessionId && !activePanel}
+                  onSelect={(selected) => {
+                    onPanelSelect(null); // Return to chat when selecting history
+                    onHistorySelect(selected);
+                  }}
                   onDelete={onHistoryDelete}
                   onRename={onHistoryRename}
                   onPin={onHistoryPin}
@@ -234,16 +245,22 @@ const HistorySidebar = ({
 
       {/* Footer */}
       <div className="sidebar-footer">
-        <div className="user-profile" onClick={onProfileClick} style={{ cursor: 'pointer' }} title="View Profile">
-          <div className="user-avatar">{user?.name?.charAt(0)?.toUpperCase() || 'U'}</div>
-          <div className="user-info">
-            <span className="user-name">{user?.name}</span>
-            <span className="user-status">Free Plan</span>
-          </div>
+        <div className="sidebar-footer-labels">
+          <span className="footer-label-text">Profile</span>
+          <span className="footer-label-text">Log Out</span>
         </div>
-        <button className="logout-btn" onClick={logout} title="Log Out">
-          <LogOut size={16} />
-        </button>
+        <div className="sidebar-footer-controls">
+          <div className="user-profile" onClick={onProfileClick} style={{ cursor: 'pointer' }} title="View Profile">
+            <div className="user-avatar">{user?.name?.charAt(0)?.toUpperCase() || 'U'}</div>
+            <div className="user-info">
+              <span className="user-name">{user?.name}</span>
+              <span className="user-status">{(user?.plan || 'Free')} Plan</span>
+            </div>
+          </div>
+          <button className="logout-btn" onClick={logout} title="Log Out">
+            <LogOut size={16} />
+          </button>
+        </div>
       </div>
     </aside>
   );

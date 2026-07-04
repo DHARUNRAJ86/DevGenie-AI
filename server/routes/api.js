@@ -8,6 +8,7 @@ const { protect } = require('../middleware/authMiddleware');
 router.post('/auth/signup', authController.signup);
 router.post('/auth/login', authController.login);
 router.get('/auth/me', protect, authController.getMe);
+router.put('/auth/plan', protect, authController.updatePlan);
 
 // AI / Chat routes
 router.post('/ask', protect, aiController.askAgent);
