@@ -300,6 +300,8 @@ console.log("Done! 🚀");`);
         onProfileClick={() => navigate('/profile')}
         activePanel={activePanel}
         onPanelSelect={handlePanelSelect}
+        theme={theme}
+        onThemeChange={handleThemeChange}
       />
 
       <main className="main-content">

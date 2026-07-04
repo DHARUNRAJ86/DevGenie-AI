@@ -2732,3 +2732,375 @@ textarea.prompt-input::placeholder { color: #666; font-size: 0.97rem; }
   font-style: italic;
 }
 
+/* ==========================================================================
+   Antigravity Premium Custom Styles (Theme Switcher, Alignment & Light Mode)
+   ========================================================================== */
+
+/* ─── Center Agent Selector properly ─── */
+.agent-selector {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  gap: 0.75rem !important;
+  margin-top: 1.5rem !important;
+}
+
+.agent-pills {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 0.6rem !important;
+}
+
+/* ─── Footer Layout & Spacing ─── */
+.sidebar-footer {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.6rem !important;
+  padding: 0.75rem 0.85rem 1rem !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
+  margin-top: auto !important;
+}
+
+.footer-label-row {
+  display: flex !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  padding: 0 0.25rem 0 0.5rem !important;
+  margin-bottom: 0.1rem !important;
+}
+
+.footer-label-text {
+  font-size: 0.65rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  color: rgba(255, 255, 255, 0.35) !important;
+}
+
+.sidebar-footer-controls {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  gap: 0.5rem !important;
+  padding: 0 0.25rem !important;
+}
+
+/* ─── Theme Switcher Styling ─── */
+.theme-switcher {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 0.4rem 0.6rem !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 10px !important;
+  margin-bottom: 0.25rem !important;
+  width: 100% !important;
+}
+
+.theme-label {
+  font-size: 0.72rem !important;
+  font-weight: 600 !important;
+  color: rgba(255, 255, 255, 0.5) !important;
+  letter-spacing: 0.04em !important;
+}
+
+.theme-options {
+  display: flex !important;
+  gap: 4px !important;
+}
+
+.theme-btn {
+  display: flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  padding: 4px 10px !important;
+  border-radius: 6px !important;
+  border: 1px solid transparent !important;
+  cursor: pointer !important;
+  font-size: 0.72rem !important;
+  font-weight: 600 !important;
+  font-family: inherit !important;
+  transition: all 0.18s ease !important;
+  background: transparent !important;
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.theme-btn--dark {
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+
+.theme-btn--light {
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+
+.theme-btn--active {
+  background: rgba(99, 102, 241, 0.25) !important;
+  border-color: rgba(99, 102, 241, 0.5) !important;
+  color: #a5b4fc !important;
+}
+
+.theme-btn:hover:not(.theme-btn--active) {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.theme-swatch {
+  display: inline-block !important;
+  width: 8px !important;
+  height: 8px !important;
+  border-radius: 50% !important;
+  flex-shrink: 0 !important;
+}
+
+.theme-swatch--dark {
+  background: #1a1a2e !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.25) !important;
+}
+
+.theme-swatch--light {
+  background: #f8fafc !important;
+  border: 1.5px solid rgba(0, 0, 0, 0.2) !important;
+}
+
+
+/* ─── Light Theme Variable Customization ─── */
+[data-theme="light"] {
+  --bg-dark: #f0f2f5 !important;
+  --bg-card: #ffffff !important;
+  --bg-card-hover: rgba(0, 0, 0, 0.05) !important;
+  --border-light: rgba(0, 0, 0, 0.1) !important;
+  --text-primary: #111827 !important;
+  --text-secondary: #6b7280 !important;
+  --text-accent: #111827 !important;
+  --code-bg: #f3f4f6 !important;
+  --sidebar-bg: #ffffff !important;
+  --sidebar-border: rgba(0, 0, 0, 0.08) !important;
+  --sidebar-item-hover: rgba(0, 0, 0, 0.06) !important;
+  --sidebar-item-active: rgba(99, 102, 241, 0.1) !important;
+  --main-bg: #f5f7fa !important;
+  --input-bg: #ffffff !important;
+  --input-border: rgba(0, 0, 0, 0.12) !important;
+}
+
+/* ─── Light Theme Component Selectors overrides ─── */
+[data-theme="light"] body,
+[data-theme="light"] .app-container {
+  background-color: var(--main-bg) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="light"] .history-sidebar {
+  background: var(--sidebar-bg) !important;
+  border-right-color: var(--sidebar-border) !important;
+}
+
+[data-theme="light"] .sidebar-brand,
+[data-theme="light"] .sidebar-utility-item {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="light"] .sidebar-utility-item:hover,
+[data-theme="light"] .sidebar-brand:hover {
+  background: var(--sidebar-item-hover) !important;
+}
+
+[data-theme="light"] .sidebar-utility-item.new-chat {
+  background: rgba(0, 0, 0, 0.07) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="light"] .sidebar-utility-item.nav-active {
+  background: var(--sidebar-item-active) !important;
+  color: #6366f1 !important;
+}
+
+[data-theme="light"] .sidebar-footer {
+  border-top-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme="light"] .user-name {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="light"] .user-status,
+[data-theme="light"] .footer-label-text,
+[data-theme="light"] .history-group-label {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="light"] .logout-btn {
+  color: #9ca3af !important;
+}
+
+[data-theme="light"] .theme-switcher {
+  background: rgba(0, 0, 0, 0.04) !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme="light"] .theme-label {
+  color: rgba(0, 0, 0, 0.5) !important;
+}
+
+[data-theme="light"] .theme-btn {
+  color: rgba(0, 0, 0, 0.45) !important;
+  background: rgba(0, 0, 0, 0.05) !important;
+}
+
+[data-theme="light"] .theme-btn--active {
+  background: rgba(99, 102, 241, 0.1) !important;
+  border-color: rgba(99, 102, 241, 0.4) !important;
+  color: #4f46e5 !important;
+}
+
+[data-theme="light"] .main-content {
+  background: var(--main-bg) !important;
+}
+
+[data-theme="light"] .empty-state h1,
+[data-theme="light"] .empty-state p {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="light"] .history-item {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="light"] .history-item-preview {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="light"] .history-item:hover {
+  background: var(--sidebar-item-hover) !important;
+}
+
+[data-theme="light"] .history-item--active {
+  background: var(--sidebar-item-active) !important;
+}
+
+[data-theme="light"] .history-empty {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="light"] .search-input {
+  background: rgba(0, 0, 0, 0.06) !important;
+  color: var(--text-primary) !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+[data-theme="light"] .search-input::placeholder {
+  color: #9ca3af !important;
+}
+
+[data-theme="light"] .main-topbar {
+  background: rgba(240, 242, 245, 0.9) !important;
+  border-bottom-color: rgba(0, 0, 0, 0.08) !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+[data-theme="light"] .topbar-agent-label {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="light"] .switch-agent-btn {
+  background: rgba(0, 0, 0, 0.06) !important;
+  color: var(--text-primary) !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+[data-theme="light"] .chat-input-wrapper,
+[data-theme="light"] .chat-input-form {
+  background: var(--input-bg) !important;
+  border-color: var(--input-border) !important;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme="light"] .input-container {
+  background: #ffffff !important;
+  border-color: rgba(0,0,0,0.12) !important;
+}
+
+[data-theme="light"] .input-container:focus-within {
+  border-color: rgba(99,102,241,0.5) !important;
+}
+
+[data-theme="light"] .chat-input {
+  background: transparent !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="light"] textarea.prompt-input::placeholder {
+  color: #9ca3af !important;
+}
+
+[data-theme="light"] .user-msg {
+  background: rgba(99, 102, 241, 0.12) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="light"] .bot-msg,
+[data-theme="light"] .bot-msg-bubble {
+  background: #ffffff !important;
+  color: var(--text-primary) !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+}
+
+[data-theme="light"] .agent-btn {
+  color: #374151 !important;
+  border-color: rgba(0,0,0,0.15) !important;
+}
+
+[data-theme="light"] .agent-btn:hover {
+  background: rgba(0,0,0,0.06) !important;
+  color: #111827 !important;
+}
+
+[data-theme="light"] .agent-btn.active {
+  background: rgba(99, 102, 241, 0.1) !important;
+  color: #4f46e5 !important;
+  border-color: var(--agent-color, rgba(99, 102, 241, 0.4)) !important;
+  box-shadow: 0 0 0 1px var(--agent-color, rgba(99, 102, 241, 0.2)), 0 0 12px rgba(99, 102, 241, 0.1) !important;
+}
+
+[data-theme="light"] .agent-selector-label {
+  color: #6b7280 !important;
+}
+
+[data-theme="light"] .submit-btn-icon {
+  background: #111827 !important;
+  color: #ffffff !important;
+}
+
+[data-theme="light"] .submit-btn-icon:disabled {
+  background: rgba(0,0,0,0.1) !important;
+  color: #9ca3af !important;
+}
+
+[data-theme="light"] .input-icon-btn {
+  color: #6b7280 !important;
+}
+
+[data-theme="light"] .input-icon-btn:hover {
+  color: #111827 !important;
+}
+
+[data-theme="light"] .copy-btn,
+[data-theme="light"] .user-msg-copy-btn,
+[data-theme="light"] .inline-copy-btn {
+  color: #6b7280 !important;
+}
+
+[data-theme="light"] .copy-btn:hover,
+[data-theme="light"] .user-msg-copy-btn:hover,
+[data-theme="light"] .inline-copy-btn:hover {
+  color: #111827 !important;
+  background: rgba(0, 0, 0, 0.06) !important;
+}
+
+
