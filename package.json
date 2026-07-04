@@ -1,0 +1,12 @@
+{
+  "name": "devgenie-ai-monorepo",
+  "version": "1.0.0",
+  "description": "Unified package.json for DevGenie AI Render deployment",
+  "scripts": {
+    "install-client": "cd client && npm install",
+    "install-server": "cd server && npm install",
+    "build-client": "cd client && npm run build",
+    "build": "npm run install-client && npm run build-client && npm run install-server",
+    "start": "cd server && npm start"
+  }
+}

@@ -66,7 +66,8 @@ const ProfilePage = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.put('http://localhost:5000/api/auth/plan', 
+      const API_URL = import.meta.env.VITE_API_URL || '/api';
+      const res = await axios.put(`${API_URL}/auth/plan`, 
         { plan: selectedPlan.name },
         { headers: { Authorization: `Bearer ${token}` } }
       );
